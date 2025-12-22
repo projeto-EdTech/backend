@@ -1,0 +1,2 @@
+ALTER TABLE usuario
+ADD COLUMN tipo_usuario VARCHAR(50) NOT NULL;
