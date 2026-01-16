@@ -1,5 +1,7 @@
-package br.com.Simulavest.domain.simulado;
+package br.com.Simulavest.domain.simulado.dto.personalizado;
 
+import br.com.Simulavest.domain.simulado.validacoes.DadosEntradaSimulado;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 
@@ -10,9 +12,9 @@ public record SimuladoPersonalizadoRequestDTO(
         @NotEmpty(message = "A lista de fundamentos não pode ser vazia.")
         List<String> fundamentos,
 
-        @NotEmpty(message = "A sigla não pode ser vazia.")
+        @NotBlank(message = "A sigla não pode ser vazia.")
         String sigla,
 
         @NotNull(message = "A quantidade de questões é obrigatória.")
         Integer quantidade_questoes
-) {}
+) implements DadosEntradaSimulado {}

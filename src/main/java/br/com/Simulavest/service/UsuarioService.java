@@ -5,6 +5,7 @@ import br.com.Simulavest.domain.usuario.Usuario;
 import br.com.Simulavest.domain.usuario.UsuarioRepository;
 import br.com.Simulavest.domain.usuario.dto.CadastrarUsuarioDTO;
 import br.com.Simulavest.domain.usuario.dto.InscricaoArtigoDTO;
+import br.com.Simulavest.exception.ResourceNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -35,7 +36,7 @@ public class UsuarioService {
         boolean existe = repository.existsByEmail(dto.email());
 
         if(!existe) {
-            throw new IllegalArgumentException("Usuário não encontrado com o email: " + dto.email());
+            throw new ResourceNotFoundException("Usuário não encontrado com o email: " + dto.email());
         }
 
         int updatedRows = repository.atualizarInscricaoArtigo(dto.email());

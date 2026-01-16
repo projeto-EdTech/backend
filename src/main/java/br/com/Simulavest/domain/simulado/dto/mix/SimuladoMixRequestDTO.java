@@ -1,4 +1,4 @@
-package br.com.Simulavest.domain.simulado;
+package br.com.Simulavest.domain.simulado.dto.mix;
 
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
@@ -12,5 +12,4 @@ public record SimuladoMixRequestDTO(
         @NotNull(message = "A quantidade de questões é obrigatória")
         @Min(value = 1, message = "A quantidade mínima é 1 questão")
         Integer quantidade_questoes
-) {
-}
+) {}

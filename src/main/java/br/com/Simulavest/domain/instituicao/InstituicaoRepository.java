@@ -13,4 +13,6 @@ public interface InstituicaoRepository extends JpaRepository<Instituicao, UUID> 
 
     @Query("SELECT new br.com.Simulavest.domain.instituicao.dtos.InstituicaoNomeEIdDto(i.id, i.nome) FROM Instituicao i")
     List<InstituicaoNomeEIdDto> findAllNomeEId();
+
+    boolean existsBySiglaIgnoreCase(String sigla);
 }

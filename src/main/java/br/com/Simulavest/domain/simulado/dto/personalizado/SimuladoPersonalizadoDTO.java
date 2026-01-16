@@ -1,4 +1,4 @@
-package br.com.Simulavest.domain.simulado;
+package br.com.Simulavest.domain.simulado.dto.personalizado;
 
 import br.com.Simulavest.domain.alternativa.dto.AlternativaSimuladoPersonalizadoDTO;
 import br.com.Simulavest.domain.questao.Questao;

@@ -20,7 +20,7 @@ public class SimulavestApplication {
 		return new RestTemplate();
 	}
 
-	@Bean
+	/*@Bean
 	public CommandLineRunner testarEnvioEmail(NotificacaArtigoService service) {
 		return args -> {
 			System.out.println("==========================================");
@@ -34,5 +34,5 @@ public class SimulavestApplication {
 
 			System.out.println("✅ Comando de envio disparado!");
 		};
-	}
+	}*/
 }

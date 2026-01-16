@@ -1,6 +1,7 @@
 package br.com.Simulavest.domain.historico;
 
 import br.com.Simulavest.domain.prova.Prova;
+import br.com.Simulavest.domain.simulado.TipoSimulado;
 import br.com.Simulavest.domain.usuario.Usuario;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -27,17 +28,15 @@ public class Historico {
     @Column(name = "data_historico")
     private LocalDate data;
 
-    @Column(name = "nota_final")
-    private double notaFinal;
-
-    @Column(name = "feedback_gemini")
-    private String feedbackGemini;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "tipo_simulado")
+    private TipoSimulado tipo_simulado;
 
     @Column(name = "quantidade_acertos")
-    private int quantidadeAcertos;
+    private int quantidade_acertos;
 
-    @Column(name = "quantidade_erros")
-    private int quantidadeErros;
+    @Column(name = "quantidade_questoes")
+    private int quantidade_questoes;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "usuario_id")

@@ -1,34 +1,43 @@
 package br.com.Simulavest.service;
 
 import br.com.Simulavest.domain.conteudo.Conteudo;
+import br.com.Simulavest.domain.conteudo.ConteudoRepository;
+import br.com.Simulavest.domain.instituicao.InstituicaoRepository;
 import br.com.Simulavest.domain.questao.Questao;
 import br.com.Simulavest.domain.questao.QuestaoRepository;
-import br.com.Simulavest.domain.simulado.SimuladoPersonalizadoDTO;
-import br.com.Simulavest.exception.QuestoesInsuficientesException;
+import br.com.Simulavest.domain.questao.dto.ContagemQuestaoRequestDTO;
+import br.com.Simulavest.domain.simulado.dto.personalizado.SimuladoPersonalizadoDTO;
+import br.com.Simulavest.domain.simulado.dto.personalizado.SimuladoPersonalizadoRequestDTO;
+import br.com.Simulavest.domain.simulado.validacoes.ValidadorSimuladoPersonalizado;
+import br.com.Simulavest.exception.ResourceNotFoundException;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
-
 @Service
 public class SimuladoPersonalizadoService {
 
-    private final QuestaoRepository repository;
-
-
-    public SimuladoPersonalizadoService(QuestaoRepository repository) {
-        this.repository = repository;
-    }
+    @Autowired
+    private QuestaoRepository repository;
+    @Autowired
+    private InstituicaoRepository instituicaoRepository;
+    @Autowired
+    private ConteudoRepository conteudoRepository;
+    @Autowired
+    private List<ValidadorSimuladoPersonalizado> validadorSimuladoPersonalizados;
 
     @Transactional(readOnly = true)
-    public long quantidadeQuestoes(List<String> fundamentos, String silga) {
-        if(fundamentos == null || fundamentos.isEmpty() || silga == null || silga.isEmpty()) {
-            return 0L;
-        }
-        String instituicaoLowerCase = silga.toLowerCase();
+    public long quantidadeQuestoes(ContagemQuestaoRequestDTO dto) {
 
+        var sigla = dto.sigla();
+        var fundamentos = dto.fundamentos();
+
+        validadorSimuladoPersonalizados.forEach(v -> v.validar(dto));
+
+        String instituicaoLowerCase = sigla.toLowerCase();
         List<String> fundamentosLowerCase = fundamentos.stream()
                 .map(String::toLowerCase)
                 .collect(Collectors.toList());
@@ -37,7 +46,14 @@ public class SimuladoPersonalizadoService {
     }
 
     @Transactional(readOnly = true)
-    public List<SimuladoPersonalizadoDTO> iniciarSimulado(String sigla, List<String> fundamentos, int quantidade_questoes) {
+    public List<SimuladoPersonalizadoDTO> iniciarSimulado(SimuladoPersonalizadoRequestDTO dto) {
+
+        var quantidade_questoes = dto.quantidade_questoes();
+        var fundamentos = dto.fundamentos();
+        var sigla = dto.sigla();
+
+        validadorSimuladoPersonalizados.forEach(v -> v.validar(dto));
+
         if (quantidade_questoes < fundamentos.size()) {
             throw new IllegalArgumentException(String.format(
                     "A quantidade de questões solicitada (%d) é menor que o número de fundamentos selecionados (%d).",
@@ -45,7 +61,10 @@ public class SimuladoPersonalizadoService {
         }
 
         String instituicaoLowerCase = sigla.toLowerCase();
-        List<String> fundamentosLowerCase = fundamentos.stream().map(String::toLowerCase).collect(Collectors.toList());
+        List<String> fundamentosLowerCase = fundamentos.stream()
+                .map(String::toLowerCase)
+                .collect(Collectors.toList());
+
         List<Questao> questoesDisponiveis = repository.buscarQuestoesPorInstituicaoEFundamentos(instituicaoLowerCase, fundamentosLowerCase);
 
         Map<String, List<Questao>> questoesPorFundamento = new HashMap<>();
@@ -57,7 +76,6 @@ public class SimuladoPersonalizadoService {
                 }
             }
         }
-
 
         Map<String, Integer> metaPorFundamento = new HashMap<>();
         int basePorFundamento = quantidade_questoes / fundamentos.size();
@@ -103,9 +121,8 @@ public class SimuladoPersonalizadoService {
             questoesSelecionadas.addAll(poolUnico.subList(0, numeroParaPegarDoPool));
         }
 
-
         if (questoesSelecionadas.size() < quantidade_questoes) {
-            throw new QuestoesInsuficientesException(String.format(
+            throw new ResourceNotFoundException(String.format(
                     "Não foi possível encontrar a quantidade de questões solicitada. Solicitado: %d, Disponível: %d",
                     quantidade_questoes, questoesSelecionadas.size()
             ));
@@ -118,27 +135,4 @@ public class SimuladoPersonalizadoService {
                 .map(SimuladoPersonalizadoDTO::new)
                 .collect(Collectors.toList());
     }
-
-    @Transactional(readOnly = true)
-    public List<SimuladoPersonalizadoDTO> iniciarSimuladoMix(String sigla, int quantidadeSolicitada) {
-
-        List<Questao> todasQuestoes = repository.buscarQuestoesPorInstituicao(sigla.toLowerCase());
-
-        if (todasQuestoes.size() < quantidadeSolicitada) {
-            throw new QuestoesInsuficientesException(String.format(
-                    "Quantidade insuficiente. A instituição %s possui apenas %d questões cadastradas.",
-                    sigla.toUpperCase(), todasQuestoes.size()
-            ));
-        }
-
-        Collections.shuffle(todasQuestoes);
-
-
-        List<Questao> questoesSelecionadas = todasQuestoes.subList(0, quantidadeSolicitada);
-
-        return questoesSelecionadas.stream()
-                .map(SimuladoPersonalizadoDTO::new)
-                .collect(Collectors.toList());
-    }
-
 }

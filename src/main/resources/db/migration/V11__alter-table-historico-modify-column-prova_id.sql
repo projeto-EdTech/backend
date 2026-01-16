@@ -1,0 +1,1 @@
+ALTER TABLE historico ALTER COLUMN prova_id DROP NOT NULL;
