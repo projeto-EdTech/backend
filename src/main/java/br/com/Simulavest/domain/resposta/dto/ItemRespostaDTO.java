@@ -4,11 +4,11 @@ import jakarta.validation.constraints.NotNull;
 
 import java.util.UUID;
 
-public record RespostaDTO(
+public record ItemRespostaDTO(
 
         @NotNull(message = "O ID da questão é obrigatório!")
         UUID id_questao,
-
-        @NotNull(message = "O ID da alternativa é obrigatório!")
-        UUID id_alternativa_escolhida
-) {}
+        @NotNull(message = "O ID da alternativa escolhida é obrigatório!")
+        UUID id_AlternativaEscolhida
+) {
+}

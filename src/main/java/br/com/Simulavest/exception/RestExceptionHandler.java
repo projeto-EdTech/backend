@@ -30,6 +30,11 @@ public class RestExceptionHandler {
         return montarResposta(HttpStatus.NOT_FOUND, "Não Encontrado", ex.getMessage(), request);
     }
 
+    @ExceptionHandler(RegraDeNegocioException.class)
+    public ResponseEntity<Object> handleRegraDeNegocio(RegraDeNegocioException ex, WebRequest request) {
+        return montarResposta(HttpStatus.BAD_REQUEST, "Erro de Validação", ex.getMessage(), request);
+    }
+
     // 3. Erros Genéricos (Segurança)
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Object> handleGeneral(Exception ex, WebRequest request) {

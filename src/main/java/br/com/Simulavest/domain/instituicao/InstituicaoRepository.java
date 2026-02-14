@@ -1,6 +1,7 @@
 package br.com.Simulavest.domain.instituicao;
 
 import br.com.Simulavest.domain.instituicao.dtos.InstituicaoNomeEIdDto;
+import br.com.Simulavest.domain.nota_corte.NotaCorte;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 

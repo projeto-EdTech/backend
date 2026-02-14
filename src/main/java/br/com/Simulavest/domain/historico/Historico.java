@@ -46,4 +46,7 @@ public class Historico {
     @JoinColumn(name = "prova_id")
     private Prova prova;
 
+    @Column(name = "tempo_gasto")
+    private Integer tempoGasto;
+
 }

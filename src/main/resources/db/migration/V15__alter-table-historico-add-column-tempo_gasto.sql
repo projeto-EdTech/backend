@@ -1,0 +1,1 @@
+ALTER TABLE historico ADD COLUMN tempo_gasto INTEGER;

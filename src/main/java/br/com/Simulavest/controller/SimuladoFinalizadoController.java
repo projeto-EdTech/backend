@@ -1,8 +1,8 @@
 package br.com.Simulavest.controller;
 
-import br.com.Simulavest.domain.simulado.dto.finalizado.SimuladoFinalizadoDTO;
-import br.com.Simulavest.domain.simulado.dto.finalizado.SimuladoResultadoDTO;
-import br.com.Simulavest.service.SimuladoFinalizadoService;
+import br.com.Simulavest.domain.historico.dto.HistoricoDTO;
+import br.com.Simulavest.domain.resposta.dto.SimuladoInputDTO;
+import br.com.Simulavest.service.HistoricoService;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,14 +18,14 @@ import org.springframework.web.bind.annotation.RestController;
 public class SimuladoFinalizadoController {
 
     @Autowired
-    private SimuladoFinalizadoService simuladoFinalizadoService;
+    private HistoricoService service;
 
     @PostMapping("/finalizar")
     @Transactional
-    public ResponseEntity<SimuladoResultadoDTO> finalizarSimulado(@RequestBody @Valid SimuladoFinalizadoDTO dto) {
+    public ResponseEntity<HistoricoDTO> finalizarSimulado(@RequestBody @Valid SimuladoInputDTO dto) {
 
-        SimuladoResultadoDTO resultado = simuladoFinalizadoService.processarSimulado(dto);
+        var historico = service.cadastrarHistorico(dto);
 
-        return ResponseEntity.status(HttpStatus.CREATED).body(resultado);
+        return ResponseEntity.status(HttpStatus.CREATED).body(historico);
     }
 }

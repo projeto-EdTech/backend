@@ -45,5 +45,4 @@ public class Artigo {
     @OneToMany(mappedBy = "artigo", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ArtigoImagem> imagens = new ArrayList<>();
 
-
 }
