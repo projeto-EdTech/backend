@@ -3,6 +3,7 @@ package br.com.Simulavest.controller;
 import br.com.Simulavest.domain.usuario.Usuario;
 import br.com.Simulavest.domain.usuario.dto.CadastrarUsuarioDTO;
 import br.com.Simulavest.domain.usuario.dto.InscricaoArtigoDTO;
+import br.com.Simulavest.domain.usuario.dto.LoginUsuarioDTO;
 import br.com.Simulavest.service.UsuarioService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -25,15 +26,15 @@ public class UsuarioController {
         if (sucesso) {
             return ResponseEntity.ok("Newsletter ativada com sucesso.");
         } else {
-            return ResponseEntity.badRequest().body("Não foi possível ativar a newsletter.");
+            return ResponseEntity.ok("Newsletter desativada com sucesso.");
         }
     }
 
     @PostMapping("/login")
-    public ResponseEntity<String> cadastrarUsuario(@RequestBody @Valid CadastrarUsuarioDTO dados) {
+    public ResponseEntity<LoginUsuarioDTO> cadastrarUsuario(@RequestBody @Valid CadastrarUsuarioDTO dados) {
 
-        Usuario usuarioSalvo = service.cadastrar(dados);
+        LoginUsuarioDTO usuarioSalvo = service.cadastrar(dados);
 
-        return ResponseEntity.ok("Usuário cadastrado com sucesso!");
+        return ResponseEntity.ok(usuarioSalvo);
     }
 }

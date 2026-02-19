@@ -28,8 +28,9 @@ public class SecurityConfig {
                         .requestMatchers("/simulados/**").permitAll()
                         .requestMatchers("/nota-corte/**").permitAll()
                         .requestMatchers("/flashcards/**").permitAll()
+                        .requestMatchers("/api/**").permitAll()
 
-                        .requestMatchers("/api/usuarios/**").permitAll()
+                        .requestMatchers("/usuarios/**").permitAll()
                         .requestMatchers("/v3/api-docs/**", "/swagger-ui.html", "/swagger-ui/**").permitAll()
                         .anyRequest().authenticated()
                 )
@@ -39,7 +40,13 @@ public class SecurityConfig {
     @Bean
     CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(List.of("http://localhost:3000")); // Se seu front for outra porta, adicione aqui
+        // Adicione o IP do seu amigo e o seu localhost para testes
+        configuration.setAllowedOrigins(List.of(
+                "http://localhost:3000",
+                "http://26.185.1.30:3000", // Front-end dele
+                "http://26.185.1.30",       // Requisições diretas dele
+                "http://26.152.166.102"
+        ));
         configuration.setAllowedMethods(List.of("GET","POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("*"));
         configuration.setAllowCredentials(true);

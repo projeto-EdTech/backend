@@ -8,4 +8,6 @@ import java.util.UUID;
 
 public interface ProvaRepository extends JpaRepository<Prova, UUID> {
     Optional<Prova> findProvaByInstituicaoAndAno(Instituicao instituicao, int ano);
+
+
 }

@@ -17,6 +17,7 @@ public record ProvaDTO(
         String nomeProva,
         int ano,
         int qtdeQuestoes,
+        int dia,
         List<QuestaoDTO> questoes
 ) {
     public ProvaDTO(Prova p) {
@@ -26,6 +27,7 @@ public record ProvaDTO(
                 p.getNome(),
                 p.getAno(),
                 p.getQtdeQuestoes(),
+                p.getDia(),
                 p.getQuestoes().stream()
                         .map(QuestaoDTO::new).sorted(Comparator.comparingInt(QuestaoDTO::numeroEnunciado)).toList()
         );

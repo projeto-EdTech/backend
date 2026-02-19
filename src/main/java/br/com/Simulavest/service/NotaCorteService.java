@@ -25,9 +25,6 @@ public class NotaCorteService {
     @Autowired
     private InstituicaoRepository instituicaoRepository;
 
-    @Autowired
-    private RotinaLimpezaService limpezaService;
-
     @Transactional
     public void importarNotas(NotaCorteInputDTO dto) {
 
@@ -45,7 +42,6 @@ public class NotaCorteService {
                 .collect(Collectors.toList());
 
         notaCorteRepository.saveAll(notasParaSalvar);
-        limpezaService.limparNotasCorteAntigas();
     }
 
     @Transactional

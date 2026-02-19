@@ -122,21 +122,21 @@ public class InstituicaoService {
         );
     }
 
-    public List<EstatisticaMateriaDto> obterEstatisticasPorUniversidadeEMateria(String universidadeId, UUID materiaId) {
-        if (materiaId == null || universidadeId == null || universidadeId.isBlank()) {
+    public List<EstatisticaMateriaDto> obterEstatisticasPorUniversidadeEMateria(String universidadeId, String nome_materia) {
+        if (nome_materia.isBlank() || universidadeId == null || universidadeId.isBlank()) {
             throw new IllegalArgumentException("ID da matéria ou da universidade inválido.");
         }
 
         // Busca a matéria
-        var materiaEscolhida = materiaRepository.findById(materiaId)
-                .orElseThrow(() -> new IllegalArgumentException("Matéria não encontrada com o ID: " + materiaId));
+        var materiaEscolhida = materiaRepository.findByNome(nome_materia)
+                .orElseThrow(() -> new IllegalArgumentException("Matéria não encontrada com o ID: " + nome_materia));
 
         // Define as questões conforme o tipo de busca
         List<Questao> questoes;
         if (universidadeId.equals("all")) {
-            questoes = questaoRepository.findQuestoesByMateriaId(materiaId);
+            questoes = questaoRepository.findQuestoesByMateriaId(materiaEscolhida.getId());
         } else {
-            questoes = questaoRepository.findQuestoesByMateriaAndInstituicaoId(materiaId, UUID.fromString(universidadeId));
+            questoes = questaoRepository.findQuestoesByMateriaAndInstituicaoId(materiaEscolhida.getId(), UUID.fromString(universidadeId));
         }
 
         int totalQuestoes = questoes.size();

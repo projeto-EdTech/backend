@@ -54,16 +54,16 @@ public class InstituicaoController {
         return ResponseEntity.ok(new InstituicaoResponseDTO("Instituição atualizada com sucesso!", dtoAtualizado));
     }
 
-    @PutMapping("/adicionar-prova")
+    @PostMapping("/adicionar-prova")
     public ResponseEntity adicionarProva( @RequestBody @Valid ProvaDTO dto) {
         service.adicionarProva(dto);
 
         return ResponseEntity.ok().build();
     }
 
-    @GetMapping("estatisticas/{universidadeId}/{materiaId}")
-    public ResponseEntity obterEstatisticasPorUniversidadeEMateria(@PathVariable String universidadeId, @PathVariable UUID materiaId) {
-        var estatisticas = service.obterEstatisticasPorUniversidadeEMateria(universidadeId, materiaId);
+    @GetMapping("estatisticas/{universidadeId}/{materia}")
+    public ResponseEntity obterEstatisticasPorUniversidadeEMateria(@PathVariable String universidadeId, @PathVariable String materia) {
+        var estatisticas = service.obterEstatisticasPorUniversidadeEMateria(universidadeId, materia);
         return ResponseEntity.ok(estatisticas);
     }
 }

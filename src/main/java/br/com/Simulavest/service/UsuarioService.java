@@ -5,6 +5,7 @@ import br.com.Simulavest.domain.usuario.Usuario;
 import br.com.Simulavest.domain.usuario.UsuarioRepository;
 import br.com.Simulavest.domain.usuario.dto.CadastrarUsuarioDTO;
 import br.com.Simulavest.domain.usuario.dto.InscricaoArtigoDTO;
+import br.com.Simulavest.domain.usuario.dto.LoginUsuarioDTO;
 import br.com.Simulavest.exception.ResourceNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -17,29 +18,33 @@ public class UsuarioService {
     @Autowired
     private UsuarioRepository repository;
 
-    public Usuario cadastrar(CadastrarUsuarioDTO dto) {
+    public LoginUsuarioDTO cadastrar(CadastrarUsuarioDTO dto) {
 
-        if (repository.existsByEmail(dto.email())) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "E-mail já cadastrado.");
-        }
-
-
-        Usuario usuario = new Usuario(
-                dto.nome(),
-                dto.email(),
-                TipoUsuario.FREE
-        );
-        return repository.save(usuario);
+        return repository.findByEmail(dto.email())
+                .map(user -> new LoginUsuarioDTO(
+                        user.isNewsletter(),
+                        user.getId(),
+                        user.getTipoUsuario()
+                ))
+                .orElseGet(() -> {
+                    Usuario usuario = new Usuario(
+                            dto.nome(),
+                            dto.email(),
+                            TipoUsuario.FREE
+                    );
+                    Usuario usuarioSalvo = repository.save(usuario);
+                    return new LoginUsuarioDTO(usuarioSalvo.isNewsletter(), usuarioSalvo.getId(), usuarioSalvo.getTipoUsuario());
+                });
     }
 
     public boolean ativarNewsLetter(InscricaoArtigoDTO dto) {
-        boolean existe = repository.existsByEmail(dto.email());
+        Usuario usuario = repository.findByEmail(dto.email())
+                .orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado com o email: " + dto.email()));
 
-        if(!existe) {
-            throw new ResourceNotFoundException("Usuário não encontrado com o email: " + dto.email());
-        }
+        boolean novoStatus = !usuario.isNewsletter();
 
-        int updatedRows = repository.atualizarInscricaoArtigo(dto.email());
-        return updatedRows > 0;
+        repository.atualizarStatusNewsletter(dto.email(), novoStatus);
+
+        return novoStatus;
     }
 }

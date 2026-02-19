@@ -12,23 +12,14 @@ import java.util.UUID;
 
 public interface UsuarioRepository extends JpaRepository<Usuario, UUID> {
 
+    Optional<Usuario> findByEmail(String email);
+
     boolean existsByEmail(String email);
 
-    /**
-     * Atualiza o campo "newsletter" para TRUE, com base no email do usuário
-     * @param email - E-mail do usuário
-     * @return - O número de linhas afetadas (deve ser 1 se o usuário foi encontrado)
-     */
     @Modifying
     @Transactional
-    @Query("""
-            UPDATE Usuario u
-            SET u.newsletter = TRUE
-            WHERE u.email = :email
-            """)
-    int atualizarInscricaoArtigo(
-            @Param("email") String email
-    );
+    @Query("UPDATE Usuario u SET u.newsletter = :status WHERE u.email = :email")
+    int atualizarStatusNewsletter(@Param("email") String email, @Param("status") boolean status);
 
     @Query("""
             SELECT u.email

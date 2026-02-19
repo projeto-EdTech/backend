@@ -9,6 +9,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.context.request.WebRequest;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
 import java.util.Map;
@@ -48,4 +49,9 @@ public class RestExceptionHandler {
     }
 
     private record ErroResponse(String timestamp, int status, String error, String message, String path) {}
+
+    @ExceptionHandler(ResponseStatusException.class)
+    public ResponseEntity<Object> handleResponseStatusException(ResponseStatusException ex, WebRequest request) {
+        return montarResposta((HttpStatus) ex.getStatusCode(), "Conflito de Dados", ex.getReason(), request);
+    }
 }

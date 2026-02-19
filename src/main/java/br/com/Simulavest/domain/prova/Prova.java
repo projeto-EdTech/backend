@@ -29,6 +29,8 @@ public class Prova {
 
     private int ano;
 
+    private int dia;
+
     @Column(name = "quantidade_questoes")
     private int qtdeQuestoes;
 
