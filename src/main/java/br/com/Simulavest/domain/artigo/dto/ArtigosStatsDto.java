@@ -5,13 +5,13 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 public record ArtigosStatsDto(
         @JsonProperty("likes")
-        int curtidas,
+        int likes,
         @JsonProperty("views")
-        int visualizacoes,
+        int views,
         @JsonProperty("shares")
-        int compartilhamentos,
+        int shares,
         @JsonProperty("readingTime")
-        String tempoMedioLeitura
+        String readingTime
 ) {
     public ArtigosStatsDto(ArtigoStats artigoStats) {
         this(
