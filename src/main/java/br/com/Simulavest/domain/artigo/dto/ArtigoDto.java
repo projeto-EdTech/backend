@@ -9,21 +9,23 @@ import java.util.UUID;
 
 public record ArtigoDto(
         UUID id,
+        String slug,
         @JsonProperty("title")
-        String titulo,
+        String title,
         @JsonProperty("content")
-        String conteudoHtml,
+        String content,
         @JsonProperty("author")
-        String autor,
+        String author,
         @JsonProperty("publishedAt")
-        String dataPublicacao,
+        String publishedAt,
         @JsonProperty("category")
-        String materia,
+        String category,
         ArtigosStatsDto stats
 ) {
     public ArtigoDto(Artigo artigo) {
         this(
                 artigo.getId(),
+                artigo.getTitulo().trim().replace(" ", "-"),
                 artigo.getTitulo(),
                 artigo.getConteudo(),
                 artigo.getCriadoPor(),
@@ -36,6 +38,7 @@ public record ArtigoDto(
     public ArtigoDto(Artigo artigo, String html) {
         this(
                 artigo.getId(),
+                artigo.getTitulo().trim().replace(" ", "-"),
                 artigo.getTitulo(),
                 html,
                 artigo.getCriadoPor(),
