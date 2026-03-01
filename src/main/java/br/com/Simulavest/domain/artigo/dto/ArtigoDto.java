@@ -1,16 +1,24 @@
 package br.com.Simulavest.domain.artigo.dto;
 
 import br.com.Simulavest.domain.artigo.Artigo;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonView;
 
 import java.util.List;
 import java.util.UUID;
 
 public record ArtigoDto(
         UUID id,
+        @JsonProperty("title")
         String titulo,
+        @JsonProperty("content")
         String conteudoHtml,
+        @JsonProperty("author")
         String autor,
+        @JsonProperty("publishedAt")
         String dataPublicacao,
+        @JsonProperty("category")
+        String materia,
         ArtigosStatsDto stats
 ) {
     public ArtigoDto(Artigo artigo) {
@@ -20,6 +28,7 @@ public record ArtigoDto(
                 artigo.getConteudo(),
                 artigo.getCriadoPor(),
                 artigo.getCriadoEm().toString(),
+                artigo.getMateria().getNome(),
                 new ArtigosStatsDto(artigo.getArtigoStats())
         );
     }
@@ -31,6 +40,7 @@ public record ArtigoDto(
                 html,
                 artigo.getCriadoPor(),
                 artigo.getCriadoEm().toString(),
+                artigo.getMateria().getNome(),
                 new ArtigosStatsDto(artigo.getArtigoStats())
         );
     }
