@@ -16,7 +16,7 @@ CREATE TABLE prova (
    quantidade_questoes INT NOT NULL,
    instituicao_id UUID NOT NULL,
 
-   CONSTRAINT fk_prova_intituicao FOREIGN KEY (instituicao_id) REFERENCES instituicao(id)
+   CONSTRAINT fk_prova_intituicao FOREIGN KEY (instituicao_id) REFERENCES instituicao(id) ON DELETE CASCADE
 );
 
 CREATE TABLE questao (
@@ -25,7 +25,7 @@ CREATE TABLE questao (
     numero_questao TEXT NOT NULL,
     prova_id UUID NOT NULL,
 
-    CONSTRAINT fk_questao_prova FOREIGN KEY (prova_id) REFERENCES prova(id)
+    CONSTRAINT fk_questao_prova FOREIGN KEY (prova_id) REFERENCES prova(id) ON DELETE CASCADE
 );
 
 CREATE TABLE alternativa (
@@ -35,5 +35,5 @@ CREATE TABLE alternativa (
     correta BOOLEAN NOT NULL,
     questao_id UUID NOT NULL,
 
-    CONSTRAINT fk_alternativa_questao FOREIGN KEY (questao_id) REFERENCES questao(id)
+    CONSTRAINT fk_alternativa_questao FOREIGN KEY (questao_id) REFERENCES questao(id) ON DELETE CASCADE
 );
