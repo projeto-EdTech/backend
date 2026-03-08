@@ -75,16 +75,6 @@ public class InstituicaoService {
             for (int i = 0; i < dto.questoes().size() ; i++) {
                 var questao = new Questao(dto.questoes().get(i));
                 prova.adicionarQuestao(questao);
-//                var materia = materiaService.verificarMateria(dto.questoes().get(i).conteudo().getFirst().split("\\s+[-–—]\\s+")[0].trim());
-//                var conteudos = dto.questoes().get(i).conteudo().stream()
-//                        .map(conteudo -> {
-//                            var partes = conteudo.split("\\s+[-–—]\\s+");
-//                            if (partes.length < 2) {
-//                                throw new IllegalArgumentException("Formato inválido de conteúdo: \"" + conteudo + "\". Esperado: \"Matéria - Conteúdo\"");
-//                            }
-//                            return partes[1].trim();
-//                        })
-//                        .toList();
                 for (int j = 0; j < dto.questoes().get(i).conteudo().size() ; j++) {
                     var materia = materiaService.verificarMateria(dto.questoes().get(i).conteudo().get(j).split("\\s+[-–—]\\s+")[0].trim());
                     var conteudo = dto.questoes().get(i).conteudo().get(j).split("\\s+[-–—]\\s+")[1].trim();

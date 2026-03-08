@@ -33,6 +33,6 @@ public class Alternativa {
     public Alternativa(AlternativaDTO alternativaDto, String s) {
         this.alternativa = alternativaDto.letra().trim();
         this.textoAlternativa = alternativaDto.texto().trim();
-        this.correta = s.contentEquals(alternativaDto.letra());
+        this.correta = s.toLowerCase().contentEquals(alternativaDto.letra().toLowerCase());
     }
 }

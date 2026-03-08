@@ -45,6 +45,7 @@ public class Prova {
     public Prova(ProvaDTO dto) {
         this.nome = dto.nomeProva();
         this.ano = dto.ano();
+        this.dia = dto.dia();
         this.qtdeQuestoes = dto.qtdeQuestoes();
     }
 

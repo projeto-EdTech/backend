@@ -23,7 +23,7 @@ public class ProvaService {
             throw new IllegalArgumentException("Instituição não encontrada: " + dto.instituicao());
         }
 
-        var prova = repository.findProvaByInstituicaoAndAno(instituicao.get(), dto.ano());
+        var prova = repository.findProvaByInstituicaoAndAnoAndDia(instituicao.get(), dto.ano(), dto.dia());
 
         if (prova.isEmpty()) {
             throw new IllegalArgumentException("Prova não encontrada para a instituição " + dto.instituicao() + " no ano " + dto.ano());
