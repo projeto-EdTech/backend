@@ -2,9 +2,9 @@ package br.com.Vestibuline.service;
 
 import br.com.Vestibuline.domain.historico.HistoricoRepository;
 import br.com.Vestibuline.domain.materia.dto.PerformanceMateriaProjection;
-import br.com.Vestibuline.domain.usuario.UsuarioRepository;
 import br.com.Vestibuline.domain.usuario.dto.StatsGeralDTO;
 import br.com.Vestibuline.domain.usuario.validation.UsuarioValidator;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -12,11 +12,11 @@ import java.util.List;
 import java.util.UUID;
 
 @Service
+@RequiredArgsConstructor
 public class UsuarioStatsService {
 
-    @Autowired
-    private HistoricoRepository historicoRepository;
-    private UsuarioValidator usuarioValidator;
+    private final HistoricoRepository historicoRepository;
+    private final UsuarioValidator usuarioValidator;
 
     public StatsGeralDTO calcularStatsGeral(UUID usuarioId) {
         usuarioValidator.validarExistencia(usuarioId);
