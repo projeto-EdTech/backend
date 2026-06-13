@@ -3,6 +3,7 @@ package br.com.Vestibuline.domain.questao.dto;
 import br.com.Vestibuline.domain.alternativa.Alternativa;
 import br.com.Vestibuline.domain.alternativa.dto.AlternativaDTO;
 import br.com.Vestibuline.domain.questao.Questao;
+import com.fasterxml.jackson.annotation.JsonAlias;
 
 import java.util.List;
 
@@ -10,7 +11,9 @@ public record QuestaoDTO(
         int numeroEnunciado,
         String enunciado,
         List<AlternativaDTO> alternativas,
+        @JsonAlias({"alternativaCorreta"})
         String opcaoCorreta,
+        @JsonAlias({"conteudosAbordados"})
         List<String> conteudo
 ) {
     public QuestaoDTO(Questao q) {

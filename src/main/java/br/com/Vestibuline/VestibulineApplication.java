@@ -27,7 +27,7 @@ public class VestibulineApplication {
 
 			service.notificarArtigo(
 					"Artigo Teste - Newsletter",
-					"https://simulavest.com.br/artigo-incrivel"
+					"https://vestibuline.com.br/artigo-incrivel"
 			);
 
 			System.out.println("✅ Comando de envio disparado!");
