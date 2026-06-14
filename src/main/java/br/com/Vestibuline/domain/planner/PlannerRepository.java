@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.UUID;
 
 @Repository
-public interface PlannerRepository extends JpaRepository<Object, UUID> {
+public interface PlannerRepository extends JpaRepository<PlannerEntity, UUID> {
 
     /**
      * Query nativa que retorna as top 3 matérias com pior desempenho proporcional
