@@ -38,5 +38,8 @@ public class Resposta {
     private Alternativa alternativaEscolhida;
 
     @Column(name = "acertou")
-    private Boolean acertou;
+    private boolean acertou;
+
+    @Column(name = "revisado")
+    private boolean revisado;
 }

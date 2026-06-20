@@ -14,7 +14,7 @@ public class ValidadorRevisao {
     private final RespostaRepository respostaRepository;
 
     public void validarExistenciaDeRevisaoPendente(UUID usuarioId, UUID questaoId) {
-        boolean existeRevisaoPendente = respostaRepository.existsByHistoricoUsuarioIdAndQuestaoId(usuarioId, questaoId);
+        boolean existeRevisaoPendente = respostaRepository.existsByUsuarioIdAndQuestaoId(usuarioId, questaoId);
 
         if (!existeRevisaoPendente) {
             throw new ResourceNotFoundException(
