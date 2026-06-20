@@ -8,7 +8,9 @@ import java.util.List;
 import java.util.UUID;
 
 public interface RespostaRepository extends JpaRepository<Resposta, UUID> {
-
+    
+    boolean existsByHistoricoUsuarioIdAndQuestaoId(UUID usuarioId, UUID questaoId);
+    
     public interface ResumoErroProjection {
         String getMateria();
         String getTopico();
