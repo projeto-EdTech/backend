@@ -11,6 +11,12 @@ import java.util.UUID;
 
 public interface RespostaRepository extends JpaRepository<Resposta, UUID> {
 
+    @Query("""
+        SELECT COUNT(r) > 0 
+        FROM Resposta r 
+        WHERE r.historico.usuario.id = :usuarioId 
+          AND r.questao.id = :questaoId
+    """)
     boolean existsByUsuarioIdAndQuestaoId(UUID usuarioId, UUID questaoId);
 
     public interface ResumoErroProjection {
