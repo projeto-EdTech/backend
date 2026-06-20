@@ -45,6 +45,14 @@ public class Usuario implements UserDetails {
         this.tipoUsuario = tipoUsuario;
     }
 
+    @Column(name = "prova_alvo")
+    private String provaAlvo;
+
+    @Column(name = "curso_alvo")
+    private String cursoAlvo;
+
+    private String instituicao;
+
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return Collections.emptyList();
