@@ -39,10 +39,18 @@ public class Usuario implements UserDetails {
     @Column(name = "newsletter")
     private boolean newsletter = false;
 
+    @Column(name = "rank")
+    private Rank rank;
+
+    @Column(name = "rank_points")
+    private int rankPoints;
+
     public Usuario(String nome, String email, TipoUsuario tipoUsuario) {
         this.nome = nome;
         this.email = email;
         this.tipoUsuario = tipoUsuario;
+        this.rank = Rank.BRONZE;
+        this.rankPoints = 0;
     }
 
     @Override

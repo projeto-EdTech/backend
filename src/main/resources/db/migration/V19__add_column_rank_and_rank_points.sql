@@ -1,0 +1,2 @@
+ALTER TABLE usuario ADD COLUMN rank VARCHAR(50) DEFAULT 'Bronze';
+ALTER TABLE usuario ADD COLUMN rank_points INT DEFAULT 0;

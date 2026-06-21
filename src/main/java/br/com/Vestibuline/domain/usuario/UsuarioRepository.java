@@ -1,5 +1,6 @@
 package br.com.Vestibuline.domain.usuario;
 
+import br.com.Vestibuline.domain.usuario.dto.RankDTO;
 import jakarta.transaction.Transactional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
@@ -27,4 +28,17 @@ public interface UsuarioRepository extends JpaRepository<Usuario, UUID> {
             WHERE u.newsletter = TRUE
             """)
     List<String> buscarEmailsNewsletter();
+
+    @Query("""
+    SELECT new br.com.Vestibuline.domain.usuario.dto.RankDTO(
+        0,
+        u.nome,
+        u.email,
+        u.rankPoints,
+        u.rank
+    )
+    FROM Usuario u
+    ORDER BY u.rankPoints DESC
+    """)
+    List<RankDTO> findAllByOrderByRankPointsDesc();
 }
