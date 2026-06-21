@@ -15,7 +15,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("api/instuicao")
+@RequestMapping("api/instituicao")
 public class InstituicaoController {
 
     @Autowired
