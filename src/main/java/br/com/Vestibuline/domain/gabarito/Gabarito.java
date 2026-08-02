@@ -22,7 +22,7 @@ public class Gabarito {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
-    @Column(name = "id")
+    @Column(name = "id_gabarito")
     private UUID id;
 
     @ManyToOne(fetch = FetchType.LAZY)

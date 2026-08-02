@@ -4,7 +4,6 @@ import br.com.Vestibuline.domain.usuario.TipoUsuario;
 import br.com.Vestibuline.domain.usuario.Usuario;
 import br.com.Vestibuline.domain.usuario.UsuarioRepository;
 import br.com.Vestibuline.domain.usuario.dto.AtualizarPerfilDTO;
-import br.com.Vestibuline.domain.usuario.dto.InscricaoArtigoDTO;
 import br.com.Vestibuline.domain.usuario.validacoes.ValidadorUsuario;
 import br.com.Vestibuline.exception.ResourceNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -38,13 +37,13 @@ public class UsuarioService {
     }
 
 
-    public boolean ativarNewsLetter(InscricaoArtigoDTO dto) {
-        Usuario usuario = repository.findByEmail(dto.email())
-                .orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado com o email: " + dto.email()));
+    public boolean ativarNewsLetter(String emailUsuarioLogado) {
+        Usuario usuario = repository.findByEmail(emailUsuarioLogado)
+                .orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado com o email: " + emailUsuarioLogado));
 
         boolean novoStatus = !usuario.isNewsletter();
 
-        repository.atualizarStatusNewsletter(dto.email(), novoStatus);
+        repository.atualizarStatusNewsletter(emailUsuarioLogado, novoStatus);
 
         return novoStatus;
     }
