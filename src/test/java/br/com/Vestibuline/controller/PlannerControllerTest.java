@@ -5,6 +5,7 @@ import br.com.Vestibuline.domain.planner.dto.MateriaDesempenhoDTO;
 import br.com.Vestibuline.domain.usuario.TipoUsuario;
 import br.com.Vestibuline.domain.usuario.Usuario;
 import br.com.Vestibuline.infra.security.SecurityFilter;
+import br.com.Vestibuline.service.LogErroService;
 import br.com.Vestibuline.service.PlannerService;
 import br.com.Vestibuline.service.TokenService;
 import org.junit.jupiter.api.DisplayName;
@@ -45,6 +46,9 @@ class PlannerControllerTest {
 
     @MockitoBean
     private TokenService tokenService; // satisfaz dependência residual do SecurityFilter se ainda carregado
+
+    @MockitoBean
+    private LogErroService logErroService; // satisfaz a dependência do RestExceptionHandler (@ControllerAdvice)
 
     // -------------------------------------------------------------------------
     // Helpers

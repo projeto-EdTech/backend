@@ -5,6 +5,7 @@ import br.com.Vestibuline.domain.usuario.Usuario;
 import br.com.Vestibuline.domain.usuario.dto.AtualizarPerfilDTO;
 import br.com.Vestibuline.infra.security.SecurityFilter;
 import br.com.Vestibuline.service.DiscordSyncService;
+import br.com.Vestibuline.service.LogErroService;
 import br.com.Vestibuline.service.TokenService;
 import br.com.Vestibuline.service.UsuarioService;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -57,6 +58,9 @@ class UsuarioControllerTest {
 
     @MockitoBean
     private TokenService tokenService;
+
+    @MockitoBean
+    private LogErroService logErroService; // satisfaz a dependência do RestExceptionHandler (@ControllerAdvice)
 
     private Authentication autenticacaoDe(Usuario usuario) {
         return new UsernamePasswordAuthenticationToken(usuario, null, usuario.getAuthorities());
