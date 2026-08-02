@@ -2,6 +2,8 @@ package br.com.Vestibuline.service;
 
 import br.com.Vestibuline.domain.alternativa.dto.AlternativaRevisaoDTO;
 import br.com.Vestibuline.domain.materia.dto.MateriaRevisaoDTO;
+import br.com.Vestibuline.domain.questao.Questao;
+import br.com.Vestibuline.domain.questao.QuestaoRepository;
 import br.com.Vestibuline.domain.questao.dto.QuestaoRevisaoRecord;
 import br.com.Vestibuline.domain.questao.dto.QuestaoRevisaoDTO;
 import br.com.Vestibuline.domain.questao.validacoes.ValidadorRevisao;
@@ -22,9 +24,11 @@ import java.util.stream.Collectors;
 public class RevisaoIAService {
 
     private final RespostaRepository respostaRepository;
+    private final QuestaoRepository questaoRepository;
     private final ValidadorUsuario validadorUsuario;
     private final ValidadorRevisao validadorRevisao;
 
+    @Transactional(readOnly = true)
     public List<MateriaRevisaoDTO> obterQuestoesParaRevisao(UUID usuarioId) {
         validadorUsuario.validarExistencia(usuarioId);
         List<Object[]> dadosBrutos = respostaRepository.buscarQuestoesEAlternativasParaRevisarPorUsuario(usuarioId);
@@ -48,6 +52,13 @@ public class RevisaoIAService {
 
         Map<String, List<QuestaoRevisaoRecord>> questoesAgrupadasPorMateria = listaDeRegistrosMapeados.stream()
                 .collect(Collectors.groupingBy(QuestaoRevisaoRecord::nomeMateria));
+
+        List<UUID> idsQuestoes = listaDeRegistrosMapeados.stream()
+                .map(QuestaoRevisaoRecord::questaoId)
+                .distinct()
+                .toList();
+        Map<UUID, List<String>> imagensPorQuestao = questaoRepository.findAllById(idsQuestoes).stream()
+                .collect(Collectors.toMap(Questao::getId, Questao::getImagens));
 
         return questoesAgrupadasPorMateria.entrySet().stream()
                 .map(materiaEntry -> {
@@ -78,7 +89,8 @@ public class RevisaoIAService {
                                         dadosGerais.questaoId(),
                                         dadosGerais.nomeFundamento(),
                                         dadosGerais.enunciado(),
-                                        mapaDeAlternativasUnicas
+                                        mapaDeAlternativasUnicas,
+                                        imagensPorQuestao.getOrDefault(dadosGerais.questaoId(), List.of())
                                 );
                             }).collect(Collectors.toList());
 

@@ -76,7 +76,7 @@ public class NotaCorteService {
                 listaNotas.get(0).getNomeCurso(),
                 mediaArredondada.doubleValue(),
                 listaNotas.size(),
-                sigla.toUpperCase()
+                sigla != null ? sigla.toUpperCase() : null
         );
     }
 }

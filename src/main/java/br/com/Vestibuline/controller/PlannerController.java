@@ -1,15 +1,15 @@
 package br.com.Vestibuline.controller;
 
 import br.com.Vestibuline.domain.planner.dto.MateriaDesempenhoDTO;
+import br.com.Vestibuline.domain.usuario.Usuario;
 import br.com.Vestibuline.service.PlannerService;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
-import java.util.UUID;
 
 @RestController
 @RequestMapping("/planner")
@@ -44,10 +44,10 @@ public class PlannerController {
      *   ...
      * ]
      */
-    @GetMapping("/piores-materias/{userid}")
-    public ResponseEntity<List<MateriaDesempenhoDTO>> getPioresMaterias(@PathVariable UUID userid) {
+    @GetMapping("/piores-materias")
+    public ResponseEntity<List<MateriaDesempenhoDTO>> getPioresMaterias(@AuthenticationPrincipal Usuario usuarioLogado) {
         List<MateriaDesempenhoDTO> resultado =
-                plannerService.buscarPioresMateriasComConteudos(userid);
+                plannerService.buscarPioresMateriasComConteudos(usuarioLogado.getId());
 
         if (resultado.isEmpty()) {
             return ResponseEntity.noContent().build();

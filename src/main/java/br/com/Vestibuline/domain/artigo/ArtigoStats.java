@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 import java.util.*;
 
@@ -19,7 +20,8 @@ public class ArtigoStats {
     @GeneratedValue(strategy = jakarta.persistence.GenerationType.UUID)
     private UUID id;
 
-    @OneToOne(cascade = CascadeType.ALL)
+    @ToString.Exclude
+    @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "artigo_id", referencedColumnName = "id")
     private Artigo artigo;
 

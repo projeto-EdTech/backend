@@ -7,15 +7,16 @@ import br.com.Vestibuline.domain.artigo.dto.ArtigoDto;
 import br.com.Vestibuline.domain.artigo.repository.ArtigoRepository;
 import br.com.Vestibuline.domain.artigo.repository.ArtigoStatsRepository;
 import br.com.Vestibuline.domain.materia.MateriaRepository;
+import br.com.Vestibuline.exception.ResourceNotFoundException;
 import fr.opensagres.poi.xwpf.converter.core.BasicURIResolver;
 import fr.opensagres.poi.xwpf.converter.core.FileImageExtractor;
 import fr.opensagres.poi.xwpf.converter.xhtml.XHTMLConverter;
 import fr.opensagres.poi.xwpf.converter.xhtml.XHTMLOptions;
-import jakarta.transaction.Transactional;
 import org.apache.poi.xwpf.usermodel.XWPFDocument;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.*;
@@ -42,6 +43,11 @@ public class ArtigoService {
 
     @Transactional
     public Artigo salvarArtigo(MultipartFile file, String titulo, String autor, String materia) throws Exception {
+        var materiaArtigo = materiaRepository.findMateriaByNomeContainingIgnoreCase(materia);
+        if (materiaArtigo.isEmpty()) {
+            throw new ResourceNotFoundException("Matéria não encontrada: " + materia);
+        }
+
         Path pastaBaseArtigos = Paths.get(uploadDir, "artigos");
         Files.createDirectories(pastaBaseArtigos);
 
@@ -58,11 +64,6 @@ public class ArtigoService {
 
         String html = converterDocxParaHtml(caminhoArquivo.toFile(), pastaImagensArtigo, pastaArtigo);
         String tempoMedioLeitura = calcularTempoMedioLeitura(caminhoArquivo.toFile());
-
-        var materiaArtigo = materiaRepository.findMateriaByNomeContainingIgnoreCase(materia);
-        if (materiaArtigo.isEmpty()) {
-            throw new IllegalArgumentException("Matéria não encontrada: " + materia);
-        }
 
         Artigo artigo = new Artigo();
         ArtigoStats stats = new ArtigoStats();
@@ -306,11 +307,13 @@ public class ArtigoService {
         return (minutos + 1) + " min";
     }
 
+    @Transactional(readOnly = true)
     public Artigo buscarPorId(UUID id) {
         return repository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Artigo não encontrado com id: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Artigo não encontrado com id: " + id));
     }
 
+    @Transactional(readOnly = true)
     public List<ArtigoDto> listarArtigos() {
         List<Artigo> artigos = repository.findAll();
         List<ArtigoDto> dtos = new ArrayList<>();

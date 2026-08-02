@@ -9,5 +9,6 @@ public record QuestaoRevisaoDTO(
         UUID id_questao,
         String fundamento,
         String enunciado,
-        List<AlternativaRevisaoDTO> alternativas
+        List<AlternativaRevisaoDTO> alternativas,
+        List<String> imagens
 ) {}
