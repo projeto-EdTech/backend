@@ -103,4 +103,76 @@ public interface PlannerRepository extends JpaRepository<PlannerEntity, UUID> {
             """,
             nativeQuery = true)
     List<PlannerProjection> findTop3MateriasComTop3Conteudos(@Param("usuarioId") UUID usuarioId);
+
+
+    @Query(value = """
+        WITH respostas_por_conteudo AS (
+            SELECT
+                m.id                                          AS materia_id,
+                m.nome_materia                                AS materia_nome,
+                c.id                                          AS conteudo_id,
+                c.nome_fundamento                             AS conteudo_nome,
+                COUNT(r.id)                                   AS total_respostas,
+                COUNT(r.id) FILTER (WHERE r.acertou = false)  AS total_erros
+            FROM resposta r
+            JOIN historico   h  ON h.id            = r.historico_id
+            JOIN questao     q  ON q.id            = r.questao_id
+            JOIN questao_conteudo qc ON qc.questao_id = q.id
+            JOIN conteudo    c  ON c.id            = qc.conteudo_id
+            JOIN materia     m  ON m.id            = c.materia_id
+            WHERE h.usuario_id = :usuarioId
+            GROUP BY m.id, m.nome_materia, c.id, c.nome_fundamento
+            HAVING COUNT(r.id) > 0
+        ),
+        conteudos_rankeados AS (
+            SELECT
+                materia_id,
+                materia_nome,
+                conteudo_id,
+                conteudo_nome,
+                total_respostas                                          AS conteudo_total_respostas,
+                total_erros                                              AS conteudo_total_erros,
+                ROUND((total_erros::NUMERIC / total_respostas) * 100, 2) AS conteudo_taxa_erro,
+                ROW_NUMBER() OVER (
+                    PARTITION BY materia_id
+                    ORDER BY (total_erros::NUMERIC / total_respostas) DESC,
+                             total_erros DESC
+                )                                                        AS rank_conteudo
+            FROM respostas_por_conteudo
+        ),
+        materias_agregadas AS (
+            SELECT
+                materia_id,
+                materia_nome,
+                SUM(conteudo_total_respostas)                                          AS materia_total_respostas,
+                SUM(conteudo_total_erros)                                              AS materia_total_erros,
+                ROUND(
+                    (SUM(conteudo_total_erros)::NUMERIC / SUM(conteudo_total_respostas)) * 100,
+                    2
+                )                                                                      AS materia_taxa_erro
+            FROM conteudos_rankeados
+            GROUP BY materia_id, materia_nome
+        )
+        SELECT
+            ma.materia_id              AS materiaId,
+            ma.materia_nome            AS materiaNome,
+            ma.materia_total_respostas AS materiaTotalRespostas,
+            ma.materia_total_erros     AS materiaTotalErros,
+            ma.materia_taxa_erro       AS materiaTaxaErro,
+            cr.conteudo_id              AS conteudoId,
+            cr.conteudo_nome            AS conteudoNome,
+            cr.conteudo_total_respostas AS conteudoTotalRespostas,
+            cr.conteudo_total_erros     AS conteudoTotalErros,
+            cr.conteudo_taxa_erro       AS conteudoTaxaErro
+        FROM materias_agregadas ma
+        JOIN conteudos_rankeados cr
+            ON cr.materia_id = ma.materia_id
+            AND cr.rank_conteudo <= :topConteudosPorMateria
+        ORDER BY
+            ma.materia_taxa_erro DESC,
+            cr.rank_conteudo ASC
+        """,
+            nativeQuery = true)
+    List<PlannerProjection> findDesempenhoCompletoPorUsuario(@Param("usuarioId") UUID usuarioId,
+                                                             @Param("topConteudosPorMateria") int topConteudosPorMateria);
 }

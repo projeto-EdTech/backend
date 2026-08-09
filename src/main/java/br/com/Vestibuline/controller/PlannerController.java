@@ -1,12 +1,14 @@
 package br.com.Vestibuline.controller;
 
 import br.com.Vestibuline.domain.planner.dto.MateriaDesempenhoDTO;
+import br.com.Vestibuline.domain.planner.dto.MateriaPlanoDTO;
 import br.com.Vestibuline.domain.usuario.Usuario;
 import br.com.Vestibuline.service.PlannerService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
@@ -54,5 +56,18 @@ public class PlannerController {
         }
 
         return ResponseEntity.ok(resultado);
+    }
+
+    @GetMapping("/plano-inteligente")
+    public ResponseEntity<List<MateriaPlanoDTO>> getPlanoInteligente(
+            @AuthenticationPrincipal Usuario usuarioLogado,
+            @RequestParam(defaultValue = "50") int totalCards) {
+
+        List<MateriaPlanoDTO> plano = plannerService.gerarPlanoDeEstudos(usuarioLogado.getId(), totalCards);
+
+        if (plano.isEmpty()) {
+            return ResponseEntity.noContent().build();
+        }
+        return ResponseEntity.ok(plano);
     }
 }
