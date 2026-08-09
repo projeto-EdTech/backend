@@ -60,6 +60,6 @@ public class UsuarioService {
     }
 
     public Usuario buscarUsuarioPorId(UUID usuarioId) {
-        return null;
+        return repository.findById(usuarioId).orElseThrow();
     }
 }
