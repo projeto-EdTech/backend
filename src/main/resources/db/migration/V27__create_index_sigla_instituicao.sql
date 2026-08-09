@@ -1,0 +1,1 @@
+CREATE INDEX IF NOT EXISTS idx_instituicao_sigla ON instituicao (sigla);

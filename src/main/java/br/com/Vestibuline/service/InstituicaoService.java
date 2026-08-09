@@ -5,6 +5,7 @@ import br.com.Vestibuline.domain.instituicao.Instituicao;
 import br.com.Vestibuline.domain.instituicao.dtos.*;
 import br.com.Vestibuline.domain.instituicao.InstituicaoRepository;
 import br.com.Vestibuline.domain.instituicao.dtos.EstatisticaMateriaDto;
+import br.com.Vestibuline.domain.materia.Materia;
 import br.com.Vestibuline.domain.materia.MateriaRepository;
 import br.com.Vestibuline.domain.prova.Prova;
 import br.com.Vestibuline.domain.prova.dto.ProvaDTO;
@@ -21,9 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.util.Comparator;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.IntStream;
 
 import static java.util.stream.Collectors.toList;
@@ -123,6 +122,12 @@ public class InstituicaoService {
     }
 
     @Transactional(readOnly = true)
+    public Instituicao buscarInstituicaoPorSigla(String instituicao) {
+        return repository.findBySigla(instituicao)
+                .orElseThrow(() -> new ResourceNotFoundException("Instituição não encontrada com a sigla: " + instituicao));
+    }
+
+    @Transactional(readOnly = true)
     public List<EstatisticaMateriaDto> obterEstatisticasPorUniversidadeEMateria(String universidadeId, String nome_materia) {
         if (nome_materia.isBlank() || universidadeId == null || universidadeId.isBlank()) {
             throw new RegraDeNegocioException("ID da matéria ou da universidade inválido.");
@@ -182,5 +187,19 @@ public class InstituicaoService {
         }
     }
 
+    @Transactional(readOnly = true)
+    public Map<String, List<EstatisticaMateriaDto>> obterEstatisticasPorInstituicao(UUID instituicaoId) {
+        List<Materia> materias = materiaRepository.findAll();
+        Map<String, List<EstatisticaMateriaDto>> resultado = new LinkedHashMap<>();
+
+        for (Materia materia : materias) {
+            List<EstatisticaMateriaDto> estatisticas =
+                    obterEstatisticasPorUniversidadeEMateria(instituicaoId.toString(), materia.getNome());
+            if (!estatisticas.isEmpty()) {
+                resultado.put(materia.getNome(), estatisticas);
+            }
+        }
+        return resultado;
+    }
 
 }

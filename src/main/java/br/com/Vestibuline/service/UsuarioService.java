@@ -58,4 +58,8 @@ public class UsuarioService {
         usuario.setCursoAlvo(dto.cursoAlvo());
         usuario.setInstituicao(dto.instituicao());
     }
+
+    public Usuario buscarUsuarioPorId(UUID usuarioId) {
+        return null;
+    }
 }

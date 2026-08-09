@@ -23,7 +23,7 @@ import java.util.UUID;
  * Roda antes de tudo (incluindo o filtro de segurança) para que o requestId esteja disponível
  * em qualquer log emitido durante o processamento — inclusive em erros 401/403/429/500.
  */
-@Component
+@Component("vestibulineRequestContextFilter")
 @Order(Ordered.HIGHEST_PRECEDENCE)
 public class RequestContextFilter extends OncePerRequestFilter {
 
