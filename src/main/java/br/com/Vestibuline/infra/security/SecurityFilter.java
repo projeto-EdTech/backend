@@ -7,6 +7,7 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -30,17 +31,23 @@ public class SecurityFilter extends OncePerRequestFilter {
         var token = this.recoverToken(request);
 
         if (token != null) {
-            var email = tokenService.getSubject(token);
+            try {
+                var email = tokenService.getSubject(token);
 
-            var usuarioOptional = repository.findByEmail(email);
+                var usuarioOptional = repository.findByEmail(email);
 
-            if (usuarioOptional.isPresent()) {
-                Usuario usuario = usuarioOptional.get();
+                if (usuarioOptional.isPresent()) {
+                    Usuario usuario = usuarioOptional.get();
 
+                    var authentication = new UsernamePasswordAuthenticationToken(usuario, null, usuario.getAuthorities());
 
-                var authentication = new UsernamePasswordAuthenticationToken(usuario, null, usuario.getAuthorities());
-
-                SecurityContextHolder.getContext().setAuthentication(authentication);
+                    SecurityContextHolder.getContext().setAuthentication(authentication);
+                    MDC.put("usuarioId", usuario.getId().toString());
+                }
+            } catch (RuntimeException ex) {
+                // Token ausente/expirado/malformado: segue sem autenticação em vez de propagar
+                // a exceção para fora do filtro (o que gerava HTTP 500 com stack trace).
+                SecurityContextHolder.clearContext();
             }
         }
         filterChain.doFilter(request, response);

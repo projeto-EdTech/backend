@@ -5,10 +5,11 @@ import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.exceptions.JWTCreationException;
 import com.auth0.jwt.exceptions.JWTVerificationException;
-// 👇 O IMPORT CORRETO É ESSE AQUI!
+import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
@@ -16,11 +17,22 @@ import java.time.ZoneOffset;
 @Service
 public class TokenService {
 
-    // A variável de ambiente que definimos
+    private static final int SECRET_MIN_BYTES = 32; // 256 bits
+
     @Value("${api.security.token.secret}")
     private String secret;
 
     private static final String ISSUER = "Vestibuline-API";
+
+    @PostConstruct
+    void validarSecret() {
+        if (secret == null || secret.getBytes(StandardCharsets.UTF_8).length < SECRET_MIN_BYTES) {
+            throw new IllegalStateException(
+                    "api.security.token.secret ausente ou fraco: " +
+                    "defina um valor com pelo menos " + SECRET_MIN_BYTES + " bytes (256 bits) de entropia."
+            );
+        }
+    }
 
     public String gerarToken(Usuario usuario) {
         try {

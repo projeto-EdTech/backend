@@ -1,0 +1,4 @@
+ALTER TABLE usuario
+ADD COLUMN prova_alvo VARCHAR(50),
+ADD COLUMN curso_alvo VARCHAR(100),
+ADD COLUMN instituicao VARCHAR(150);

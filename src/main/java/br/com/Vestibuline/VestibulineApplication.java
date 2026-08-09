@@ -17,20 +17,4 @@ public class VestibulineApplication {
 	public RestTemplate restTemplate() {
 		return new RestTemplate();
 	}
-
-	/*@Bean
-	public CommandLineRunner testarEnvioEmail(NotificacaArtigoService service) {
-		return args -> {
-			System.out.println("==========================================");
-			System.out.println("🚀 INICIANDO TESTE DE NOTIFICACAO (MAIN) 🚀");
-			System.out.println("==========================================");
-
-			service.notificarArtigo(
-					"Artigo Teste - Newsletter",
-					"https://vestibuline.com.br/artigo-incrivel"
-			);
-
-			System.out.println("✅ Comando de envio disparado!");
-		};
-	}*/
 }

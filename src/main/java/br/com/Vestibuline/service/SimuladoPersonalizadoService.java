@@ -9,6 +9,7 @@ import br.com.Vestibuline.domain.questao.dto.ContagemQuestaoRequestDTO;
 import br.com.Vestibuline.domain.simulado.dto.personalizado.SimuladoPersonalizadoDTO;
 import br.com.Vestibuline.domain.simulado.dto.personalizado.SimuladoPersonalizadoRequestDTO;
 import br.com.Vestibuline.domain.simulado.validacoes.ValidadorSimuladoPersonalizado;
+import br.com.Vestibuline.exception.RegraDeNegocioException;
 import br.com.Vestibuline.exception.ResourceNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -48,25 +49,48 @@ public class SimuladoPersonalizadoService {
     @Transactional(readOnly = true)
     public List<SimuladoPersonalizadoDTO> iniciarSimulado(SimuladoPersonalizadoRequestDTO dto) {
 
-        var quantidade_questoes = dto.quantidade_questoes();
+        var quantidadeQuestoes = dto.quantidade_questoes();
         var fundamentos = dto.fundamentos();
         var sigla = dto.sigla();
 
         validadorSimuladoPersonalizados.forEach(v -> v.validar(dto));
 
-        if (quantidade_questoes < fundamentos.size()) {
-            throw new IllegalArgumentException(String.format(
+        if (quantidadeQuestoes < fundamentos.size()) {
+            throw new RegraDeNegocioException(String.format(
                     "A quantidade de questões solicitada (%d) é menor que o número de fundamentos selecionados (%d).",
-                    quantidade_questoes, fundamentos.size()));
+                    quantidadeQuestoes, fundamentos.size()));
         }
 
-        String instituicaoLowerCase = sigla.toLowerCase();
         List<String> fundamentosLowerCase = fundamentos.stream()
                 .map(String::toLowerCase)
                 .collect(Collectors.toList());
 
-        List<Questao> questoesDisponiveis = repository.buscarQuestoesPorInstituicaoEFundamentos(instituicaoLowerCase, fundamentosLowerCase);
+        List<Questao> questoesDisponiveis = repository.buscarQuestoesPorInstituicaoEFundamentos(sigla.toLowerCase(), fundamentosLowerCase);
 
+        Map<String, List<Questao>> questoesPorFundamento = agruparQuestoesPorFundamento(questoesDisponiveis, fundamentosLowerCase);
+        Map<String, Integer> metaPorFundamento = calcularMetaPorFundamento(fundamentosLowerCase, quantidadeQuestoes);
+
+        Set<Questao> questoesSelecionadas = new HashSet<>();
+        List<Questao> poolGeral = new ArrayList<>();
+        selecionarQuestoesPorFundamento(fundamentosLowerCase, questoesPorFundamento, metaPorFundamento, questoesSelecionadas, poolGeral);
+        completarComPoolRestante(quantidadeQuestoes, questoesSelecionadas, poolGeral);
+
+        if (questoesSelecionadas.size() < quantidadeQuestoes) {
+            throw new ResourceNotFoundException(String.format(
+                    "Não foi possível encontrar a quantidade de questões solicitada. Solicitado: %d, Disponível: %d",
+                    quantidadeQuestoes, questoesSelecionadas.size()
+            ));
+        }
+
+        List<Questao> listaFinal = new ArrayList<>(questoesSelecionadas);
+        Collections.shuffle(listaFinal);
+
+        return listaFinal.stream()
+                .map(SimuladoPersonalizadoDTO::new)
+                .collect(Collectors.toList());
+    }
+
+    private Map<String, List<Questao>> agruparQuestoesPorFundamento(List<Questao> questoesDisponiveis, List<String> fundamentosLowerCase) {
         Map<String, List<Questao>> questoesPorFundamento = new HashMap<>();
         for (Questao questao : questoesDisponiveis) {
             for (Conteudo conteudo : questao.getConteudos()) {
@@ -76,10 +100,13 @@ public class SimuladoPersonalizadoService {
                 }
             }
         }
+        return questoesPorFundamento;
+    }
 
+    private Map<String, Integer> calcularMetaPorFundamento(List<String> fundamentosLowerCase, int quantidadeQuestoes) {
         Map<String, Integer> metaPorFundamento = new HashMap<>();
-        int basePorFundamento = quantidade_questoes / fundamentos.size();
-        int restantes = quantidade_questoes % fundamentos.size();
+        int basePorFundamento = quantidadeQuestoes / fundamentosLowerCase.size();
+        int restantes = quantidadeQuestoes % fundamentosLowerCase.size();
 
         for (String fundamento : fundamentosLowerCase) {
             int meta = basePorFundamento;
@@ -89,10 +116,12 @@ public class SimuladoPersonalizadoService {
             }
             metaPorFundamento.put(fundamento, meta);
         }
+        return metaPorFundamento;
+    }
 
-        Set<Questao> questoesSelecionadas = new HashSet<>();
-        List<Questao> poolGeral = new ArrayList<>();
-
+    private void selecionarQuestoesPorFundamento(List<String> fundamentosLowerCase, Map<String, List<Questao>> questoesPorFundamento,
+                                                  Map<String, Integer> metaPorFundamento, Set<Questao> questoesSelecionadas,
+                                                  List<Questao> poolGeral) {
         for (String fundamento : fundamentosLowerCase) {
             List<Questao> disponiveisDoFundamento = questoesPorFundamento.getOrDefault(fundamento, new ArrayList<>());
             Collections.shuffle(disponiveisDoFundamento);
@@ -110,29 +139,18 @@ public class SimuladoPersonalizadoService {
                 }
             }
         }
+    }
 
-        int restantesParaPegar = quantidade_questoes - questoesSelecionadas.size();
-        if (restantesParaPegar > 0) {
-            poolGeral.removeAll(questoesSelecionadas);
-            List<Questao> poolUnico = poolGeral.stream().distinct().collect(Collectors.toList());
-            Collections.shuffle(poolUnico);
-
-            int numeroParaPegarDoPool = Math.min(restantesParaPegar, poolUnico.size());
-            questoesSelecionadas.addAll(poolUnico.subList(0, numeroParaPegarDoPool));
+    private void completarComPoolRestante(int quantidadeQuestoes, Set<Questao> questoesSelecionadas, List<Questao> poolGeral) {
+        int restantesParaPegar = quantidadeQuestoes - questoesSelecionadas.size();
+        if (restantesParaPegar <= 0) {
+            return;
         }
+        poolGeral.removeAll(questoesSelecionadas);
+        List<Questao> poolUnico = poolGeral.stream().distinct().collect(Collectors.toList());
+        Collections.shuffle(poolUnico);
 
-        if (questoesSelecionadas.size() < quantidade_questoes) {
-            throw new ResourceNotFoundException(String.format(
-                    "Não foi possível encontrar a quantidade de questões solicitada. Solicitado: %d, Disponível: %d",
-                    quantidade_questoes, questoesSelecionadas.size()
-            ));
-        }
-
-        List<Questao> listaFinal = new ArrayList<>(questoesSelecionadas);
-        Collections.shuffle(listaFinal);
-
-        return listaFinal.stream()
-                .map(SimuladoPersonalizadoDTO::new)
-                .collect(Collectors.toList());
+        int numeroParaPegarDoPool = Math.min(restantesParaPegar, poolUnico.size());
+        questoesSelecionadas.addAll(poolUnico.subList(0, numeroParaPegarDoPool));
     }
 }

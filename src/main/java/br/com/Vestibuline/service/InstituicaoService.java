@@ -10,10 +10,14 @@ import br.com.Vestibuline.domain.prova.Prova;
 import br.com.Vestibuline.domain.prova.dto.ProvaDTO;
 import br.com.Vestibuline.domain.questao.Questao;
 import br.com.Vestibuline.domain.questao.QuestaoRepository;
-import jakarta.transaction.Transactional;
+import br.com.Vestibuline.exception.RegraDeNegocioException;
+import br.com.Vestibuline.exception.ResourceNotFoundException;
 import jakarta.validation.Valid;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -26,6 +30,8 @@ import static java.util.stream.Collectors.toList;
 
 @Service
 public class InstituicaoService {
+
+    private static final Logger logger = LoggerFactory.getLogger(InstituicaoService.class);
 
     @Autowired
     private InstituicaoRepository repository;
@@ -48,6 +54,7 @@ public class InstituicaoService {
         return repository.save(instituicao);
     }
 
+    @Transactional(readOnly = true)
     public List<InstituicaoDTO> listarInstituicoes() {
         var listaInstituicoes = repository.findAll();
         return listaInstituicoes.stream()
@@ -57,7 +64,7 @@ public class InstituicaoService {
     @Transactional
     public Instituicao atualizarInstituicao(UUID id , InstituicaoAtualizacaoDTO dto) {
         var instituicaoExistente = repository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Instituição não encontrada com o ID: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Instituição não encontrada com o ID: " + id));
 
         instituicaoExistente.atualizarDados(dto);
 
@@ -66,37 +73,40 @@ public class InstituicaoService {
 
     @Transactional
     public void adicionarProva(@Valid ProvaDTO dto) {
-        try{
-            var instituicao = repository.findBySigla(dto.siglaUniversidade()).get();
+        var instituicao = repository.findBySigla(dto.siglaUniversidade())
+                .orElseThrow(() -> new ResourceNotFoundException("Instituição não encontrada: " + dto.siglaUniversidade()));
 
-            var prova = new Prova(dto);
-            instituicao.adicionarProva(prova);
+        var prova = new Prova(dto);
+        instituicao.adicionarProva(prova);
 
-            for (int i = 0; i < dto.questoes().size() ; i++) {
-                var questao = new Questao(dto.questoes().get(i));
-                prova.adicionarQuestao(questao);
-                for (int j = 0; j < dto.questoes().get(i).conteudo().size() ; j++) {
-                    var materia = materiaService.verificarMateria(dto.questoes().get(i).conteudo().get(j).split("\\s+[-–—]\\s+")[0].trim());
-                    var conteudo = dto.questoes().get(i).conteudo().get(j).split("\\s+[-–—]\\s+")[1].trim();
-                    var conteudoEntidade = conteudoService.verificarConteudo(conteudo, materia);
-                    questao.adicionarConteudos(conteudoEntidade, materia);
+        for (int i = 0; i < dto.questoes().size(); i++) {
+            var questao = new Questao(dto.questoes().get(i));
+            prova.adicionarQuestao(questao);
+            for (int j = 0; j < dto.questoes().get(i).conteudo().size(); j++) {
+                String[] partes = dto.questoes().get(i).conteudo().get(j).split("\\s+[-–—]\\s+");
+                if (partes.length != 2) {
+                    throw new RegraDeNegocioException(
+                            "Formato de conteúdo inválido na questão " + (i + 1) + ": esperado \"Matéria - Conteúdo\".");
                 }
-
-                for (var alternativaDto : dto.questoes().get(i).alternativas()) {
-                    var alternativa = new Alternativa(alternativaDto, dto.questoes().get(i).opcaoCorreta());
-                    questao.adicionarAlternativa(alternativa);
-                }
+                var materia = materiaService.verificarMateria(partes[0].trim());
+                var conteudo = partes[1].trim();
+                var conteudoEntidade = conteudoService.verificarConteudo(conteudo, materia);
+                questao.adicionarConteudos(conteudoEntidade, materia);
             }
 
-            repository.save(instituicao);
-        }catch (Exception e) {
-            throw new IllegalArgumentException("Erro ao adicionar prova: " + e.getMessage());
+            for (var alternativaDto : dto.questoes().get(i).alternativas()) {
+                var alternativa = new Alternativa(alternativaDto, dto.questoes().get(i).opcaoCorreta());
+                questao.adicionarAlternativa(alternativa);
+            }
         }
+
+        repository.save(instituicao);
     }
 
+    @Transactional(readOnly = true)
     public InstituicaoCompletaDto buscarInstituicaoPorId(UUID id) {
         var instituicao = repository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Instituição não encontrada com o ID: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Instituição não encontrada com o ID: " + id));
 
         var provasDto = instituicao.getProvas().stream()
                 .map(ProvaDTO::new)
@@ -112,14 +122,15 @@ public class InstituicaoService {
         );
     }
 
+    @Transactional(readOnly = true)
     public List<EstatisticaMateriaDto> obterEstatisticasPorUniversidadeEMateria(String universidadeId, String nome_materia) {
         if (nome_materia.isBlank() || universidadeId == null || universidadeId.isBlank()) {
-            throw new IllegalArgumentException("ID da matéria ou da universidade inválido.");
+            throw new RegraDeNegocioException("ID da matéria ou da universidade inválido.");
         }
 
         // Busca a matéria
         var materiaEscolhida = materiaRepository.findByNome(nome_materia)
-                .orElseThrow(() -> new IllegalArgumentException("Matéria não encontrada com o ID: " + nome_materia));
+                .orElseThrow(() -> new ResourceNotFoundException("Matéria não encontrada com o ID: " + nome_materia));
 
         // Define as questões conforme o tipo de busca
         List<Questao> questoes;
@@ -130,7 +141,7 @@ public class InstituicaoService {
         }
 
         int totalQuestoes = questoes.size();
-        System.out.println("Total de questões na matéria " + materiaEscolhida.getNome() + ": " + totalQuestoes);
+        logger.debug("Total de questões na matéria {}: {}", materiaEscolhida.getNome(), totalQuestoes);
 
         // Cálculo base (pesos brutos)
         var conteudos = materiaEscolhida.getConteudos();

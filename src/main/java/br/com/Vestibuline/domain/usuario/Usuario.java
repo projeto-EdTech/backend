@@ -7,6 +7,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.*;
@@ -45,9 +46,23 @@ public class Usuario implements UserDetails {
         this.tipoUsuario = tipoUsuario;
     }
 
+    @Column(name = "prova_alvo")
+    private String provaAlvo;
+
+    @Column(name = "curso_alvo")
+    private String cursoAlvo;
+
+    private String instituicao;
+
+    @Column(name = "discord_id")
+    private String discordId;
+
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return Collections.emptyList();
+        if (tipoUsuario == null) {
+            return Collections.emptyList();
+        }
+        return List.of(new SimpleGrantedAuthority("ROLE_" + tipoUsuario.name()));
     }
 
     @Override

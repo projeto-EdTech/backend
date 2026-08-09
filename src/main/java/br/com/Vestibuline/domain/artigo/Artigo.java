@@ -6,6 +6,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -35,13 +36,16 @@ public class Artigo {
     @Column(name = "criado_por")
     private String criadoPor;
 
+    @ToString.Exclude
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "materia_id")
     private Materia materia;
 
+    @ToString.Exclude
     @OneToOne(mappedBy = "artigo", cascade = CascadeType.ALL, orphanRemoval = true)
     private ArtigoStats artigoStats;
 
+    @ToString.Exclude
     @OneToMany(mappedBy = "artigo", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ArtigoImagem> imagens = new ArrayList<>();
 

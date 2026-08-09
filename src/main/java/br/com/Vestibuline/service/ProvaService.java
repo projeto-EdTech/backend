@@ -4,8 +4,10 @@ import br.com.Vestibuline.domain.instituicao.InstituicaoRepository;
 import br.com.Vestibuline.domain.prova.ProvaRepository;
 import br.com.Vestibuline.domain.prova.dto.EscolhaProvaEAnoRequestDTO;
 import br.com.Vestibuline.domain.prova.dto.ProvaDTO;
+import br.com.Vestibuline.exception.ResourceNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class ProvaService {
@@ -16,19 +18,15 @@ public class ProvaService {
     @Autowired
     private InstituicaoRepository instituicaoRepository;
 
+    @Transactional(readOnly = true)
     public ProvaDTO escolherProvaPorInstituicaoEAno(EscolhaProvaEAnoRequestDTO dto) {
-        var instituicao = instituicaoRepository.findBySigla(dto.instituicao());
+        var instituicao = instituicaoRepository.findBySigla(dto.instituicao())
+                .orElseThrow(() -> new ResourceNotFoundException("Instituição não encontrada: " + dto.instituicao()));
 
-        if (instituicao.isEmpty()) {
-            throw new IllegalArgumentException("Instituição não encontrada: " + dto.instituicao());
-        }
+        var prova = repository.findProvaByInstituicaoAndAnoAndDia(instituicao, dto.ano(), dto.dia())
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "Prova não encontrada para a instituição " + dto.instituicao() + " no ano " + dto.ano()));
 
-        var prova = repository.findProvaByInstituicaoAndAnoAndDia(instituicao.get(), dto.ano(), dto.dia());
-
-        if (prova.isEmpty()) {
-            throw new IllegalArgumentException("Prova não encontrada para a instituição " + dto.instituicao() + " no ano " + dto.ano());
-        }
-
-        return new ProvaDTO(prova.get());
+        return new ProvaDTO(prova);
     }
 }

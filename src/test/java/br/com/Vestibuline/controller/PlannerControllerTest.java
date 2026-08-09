@@ -2,7 +2,10 @@ package br.com.Vestibuline.controller;
 
 import br.com.Vestibuline.domain.planner.dto.ConteudoDesempenhoDTO;
 import br.com.Vestibuline.domain.planner.dto.MateriaDesempenhoDTO;
+import br.com.Vestibuline.domain.usuario.TipoUsuario;
+import br.com.Vestibuline.domain.usuario.Usuario;
 import br.com.Vestibuline.infra.security.SecurityFilter;
+import br.com.Vestibuline.service.LogErroService;
 import br.com.Vestibuline.service.PlannerService;
 import br.com.Vestibuline.service.TokenService;
 import org.junit.jupiter.api.DisplayName;
@@ -11,7 +14,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.FilterType;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -20,7 +24,7 @@ import java.util.List;
 import java.util.UUID;
 
 import static org.mockito.Mockito.*;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.authentication;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -42,6 +46,9 @@ class PlannerControllerTest {
 
     @MockitoBean
     private TokenService tokenService; // satisfaz dependência residual do SecurityFilter se ainda carregado
+
+    @MockitoBean
+    private LogErroService logErroService; // satisfaz a dependência do RestExceptionHandler (@ControllerAdvice)
 
     // -------------------------------------------------------------------------
     // Helpers
@@ -69,12 +76,18 @@ class PlannerControllerTest {
         );
     }
 
+    private Authentication autenticacaoDe(UUID usuarioId) {
+        Usuario usuario = new Usuario("Fulano", "fulano@example.com", TipoUsuario.FREE);
+        usuario.setId(usuarioId);
+        return new UsernamePasswordAuthenticationToken(usuario, null, usuario.getAuthorities());
+    }
+
     // -------------------------------------------------------------------------
     // Cenário 1 — 200 OK com dados
     // -------------------------------------------------------------------------
 
     @Test
-    @DisplayName("GET /planner/piores-materias/{userid} - deve retornar 200 com lista de matérias")
+    @DisplayName("GET /planner/piores-materias - deve retornar 200 com lista de matérias")
     void deveRetornar200ComListaDeMaterias() throws Exception {
         UUID usuarioId = UUID.randomUUID();
 
@@ -89,8 +102,8 @@ class PlannerControllerTest {
         when(plannerService.buscarPioresMateriasComConteudos(usuarioId))
                 .thenReturn(mockResult);
 
-        mockMvc.perform(get("/planner/piores-materias/{userid}", usuarioId)
-                        .with(jwt().authorities(new SimpleGrantedAuthority("ROLE_USER"))))
+        mockMvc.perform(get("/planner/piores-materias")
+                        .with(authentication(autenticacaoDe(usuarioId))))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(1))
                 .andExpect(jsonPath("$[0].materiaNome").value("Física"))
@@ -105,15 +118,15 @@ class PlannerControllerTest {
     // -------------------------------------------------------------------------
 
     @Test
-    @DisplayName("GET /planner/piores-materias/{userid} - deve retornar 204 quando sem dados")
+    @DisplayName("GET /planner/piores-materias - deve retornar 204 quando sem dados")
     void deveRetornar204QuandoSemDados() throws Exception {
         UUID usuarioId = UUID.randomUUID();
 
         when(plannerService.buscarPioresMateriasComConteudos(usuarioId))
                 .thenReturn(Collections.emptyList());
 
-        mockMvc.perform(get("/planner/piores-materias/{userid}", usuarioId)
-                        .with(jwt().authorities(new SimpleGrantedAuthority("ROLE_USER"))))
+        mockMvc.perform(get("/planner/piores-materias")
+                        .with(authentication(autenticacaoDe(usuarioId))))
                 .andExpect(status().isNoContent());
     }
 
@@ -122,11 +135,9 @@ class PlannerControllerTest {
     // -------------------------------------------------------------------------
 
     @Test
-    @DisplayName("GET /planner/piores-materias/{userid} - deve retornar 401 sem token JWT")
+    @DisplayName("GET /planner/piores-materias - deve retornar 401 sem token JWT")
     void deveRetornar401SemAutenticacao() throws Exception {
-        UUID usuarioId = UUID.randomUUID();
-
-        mockMvc.perform(get("/planner/piores-materias/{userid}", usuarioId))
+        mockMvc.perform(get("/planner/piores-materias"))
                 .andExpect(status().isUnauthorized());
     }
 
@@ -135,7 +146,7 @@ class PlannerControllerTest {
     // -------------------------------------------------------------------------
 
     @Test
-    @DisplayName("GET /planner/piores-materias/{userid} - deve retornar estrutura completa com 3 matérias")
+    @DisplayName("GET /planner/piores-materias - deve retornar estrutura completa com 3 matérias")
     void deveRetornarEstruturaCompletaComTresMaterias() throws Exception {
         UUID usuarioId = UUID.randomUUID();
 
@@ -160,8 +171,8 @@ class PlannerControllerTest {
         when(plannerService.buscarPioresMateriasComConteudos(usuarioId))
                 .thenReturn(mockResult);
 
-        mockMvc.perform(get("/planner/piores-materias/{userid}", usuarioId)
-                        .with(jwt().authorities(new SimpleGrantedAuthority("ROLE_USER"))))
+        mockMvc.perform(get("/planner/piores-materias")
+                        .with(authentication(autenticacaoDe(usuarioId))))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(3))
                 .andExpect(jsonPath("$[0].materiaNome").value("Física"))
@@ -178,9 +189,9 @@ class PlannerControllerTest {
     // -------------------------------------------------------------------------
 
     @Test
-    @DisplayName("GET /planner/piores-materias/{userid} - deve mapear todos os campos corretamente no JSON")
+    @DisplayName("GET /planner/piores-materias - deve mapear todos os campos corretamente no JSON")
     void deveMapearTodosOsCamposNoJson() throws Exception {
-        UUID usuarioId   = UUID.randomUUID();
+        UUID usuarioId    = UUID.randomUUID();
         String materiaId  = UUID.randomUUID().toString();
         String conteudoId = UUID.randomUUID().toString();
 
@@ -192,8 +203,8 @@ class PlannerControllerTest {
         when(plannerService.buscarPioresMateriasComConteudos(usuarioId))
                 .thenReturn(List.of(dto));
 
-        mockMvc.perform(get("/planner/piores-materias/{userid}", usuarioId)
-                        .with(jwt().authorities(new SimpleGrantedAuthority("ROLE_USER"))))
+        mockMvc.perform(get("/planner/piores-materias")
+                        .with(authentication(autenticacaoDe(usuarioId))))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].materiaId").value(materiaId))
                 .andExpect(jsonPath("$[0].materiaNome").value("Biologia"))
@@ -208,31 +219,19 @@ class PlannerControllerTest {
     }
 
     // -------------------------------------------------------------------------
-    // Cenário 6 — UUID inválido no path retorna 400
+    // Cenário 6 — service é chamado com o UUID do usuário autenticado (não mais do path)
     // -------------------------------------------------------------------------
 
     @Test
-    @DisplayName("GET /planner/piores-materias/{userid} - deve retornar 400 para UUID inválido")
-    void deveRetornar400ParaUuidInvalido() throws Exception {
-        mockMvc.perform(get("/planner/piores-materias/nao-e-um-uuid")
-                        .with(jwt().authorities(new SimpleGrantedAuthority("ROLE_USER"))))
-                .andExpect(status().isBadRequest());
-    }
-
-    // -------------------------------------------------------------------------
-    // Cenário 7 — service é chamado com o UUID correto do path
-    // -------------------------------------------------------------------------
-
-    @Test
-    @DisplayName("GET /planner/piores-materias/{userid} - deve chamar o service com o UUID do path")
-    void deveChamarServiceComUuidDoPath() throws Exception {
+    @DisplayName("GET /planner/piores-materias - deve chamar o service com o UUID do usuário autenticado")
+    void deveChamarServiceComUuidDoUsuarioAutenticado() throws Exception {
         UUID usuarioId = UUID.randomUUID();
 
         when(plannerService.buscarPioresMateriasComConteudos(usuarioId))
                 .thenReturn(Collections.emptyList());
 
-        mockMvc.perform(get("/planner/piores-materias/{userid}", usuarioId)
-                .with(jwt().authorities(new SimpleGrantedAuthority("ROLE_USER"))));
+        mockMvc.perform(get("/planner/piores-materias")
+                .with(authentication(autenticacaoDe(usuarioId))));
 
         verify(plannerService, times(1)).buscarPioresMateriasComConteudos(usuarioId);
     }

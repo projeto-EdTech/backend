@@ -1,0 +1,1 @@
+ALTER TABLE prova ADD CONSTRAINT uk_prova_instituicao_ano_dia UNIQUE (instituicao_id, ano, dia);

@@ -14,7 +14,8 @@ public record QuestaoDTO(
         @JsonAlias({"alternativaCorreta"})
         String opcaoCorreta,
         @JsonAlias({"conteudosAbordados"})
-        List<String> conteudo
+        List<String> conteudo,
+        List<String> imagens
 ) {
     public QuestaoDTO(Questao q) {
         this(
@@ -22,7 +23,8 @@ public record QuestaoDTO(
                 q.getEnunciado(),
                 q.getAlternativas().stream().map(AlternativaDTO::new).toList(),
                 q.getAlternativas().stream().filter(Alternativa::isCorreta).map(Alternativa::getAlternativa).findFirst().orElse(null),
-                q.getConteudos() != null ? q.getConteudos().stream().map(c -> c.getMateria().getNome() + " - " + c.getNome()).toList() : List.of()
+                q.getConteudos() != null ? q.getConteudos().stream().map(c -> c.getMateria().getNome() + " - " + c.getNome()).toList() : List.of(),
+                q.getImagens()
         );
     }
 }

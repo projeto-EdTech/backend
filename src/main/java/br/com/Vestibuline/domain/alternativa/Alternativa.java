@@ -5,7 +5,9 @@ import br.com.Vestibuline.domain.questao.Questao;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 import java.util.UUID;
 
@@ -14,6 +16,7 @@ import java.util.UUID;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
+@EqualsAndHashCode(of = "id")
 public class Alternativa {
     @Id
     @GeneratedValue(strategy = jakarta.persistence.GenerationType.UUID)
@@ -25,14 +28,16 @@ public class Alternativa {
 
     private boolean correta;
 
-    @ManyToOne
+    @ToString.Exclude
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "questao_id")
     private Questao questao;
 
 
     public Alternativa(AlternativaDTO alternativaDto, String s) {
         this.alternativa = alternativaDto.letra().trim();
-        this.textoAlternativa = alternativaDto.texto().trim();
+        // texto pode ser nulo/vazio quando o conteúdo da alternativa é uma imagem (sem texto associado).
+        this.textoAlternativa = alternativaDto.texto() != null ? alternativaDto.texto().trim() : null;
         this.correta = s.toLowerCase().contentEquals(alternativaDto.letra().toLowerCase());
     }
 }
