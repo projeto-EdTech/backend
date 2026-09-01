@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -39,6 +40,7 @@ public class ArtigoImagem {
     @Column(name = "criado_em")
     private LocalDateTime criadoEm = LocalDateTime.now();
 
+    @ToString.Exclude
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "artigo_id")
     private Artigo artigo;

@@ -1,4 +1,4 @@
-package br.com.Vestibuline.domain.usuario.validation;
+package br.com.Vestibuline.domain.usuario.validacoes;
 
 import br.com.Vestibuline.domain.usuario.UsuarioRepository;
 import br.com.Vestibuline.exception.ResourceNotFoundException;
@@ -8,7 +8,7 @@ import org.springframework.stereotype.Component;
 import java.util.UUID;
 
 @Component
-public class UsuarioValidator {
+public class ValidadorUsuario {
 
     @Autowired
     private UsuarioRepository repository;

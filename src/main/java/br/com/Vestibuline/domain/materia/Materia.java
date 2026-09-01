@@ -5,7 +5,9 @@ import br.com.Vestibuline.domain.conteudo.Conteudo;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -16,6 +18,7 @@ import java.util.UUID;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@EqualsAndHashCode(of = "id")
 public class Materia {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -24,9 +27,11 @@ public class Materia {
     @Column(name = "nome_materia")
     private String nome;
 
+    @ToString.Exclude
     @OneToMany(mappedBy = "materia", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Conteudo> conteudos = new ArrayList<>();
 
+    @ToString.Exclude
     @OneToMany(mappedBy = "materia", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private List<Artigo> artigos = new ArrayList<>();
 

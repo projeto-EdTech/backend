@@ -18,10 +18,12 @@ import br.com.Vestibuline.exception.RegraDeNegocioException;
 import br.com.Vestibuline.exception.ResourceNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 @Service
 public class HistoricoService {
@@ -32,10 +34,11 @@ public class HistoricoService {
     @Autowired private AlternativaRepository alternativaRepository;
     @Autowired private RespostaRepository respostaRepository;
 
-    public HistoricoDTO cadastrarHistorico(SimuladoInputDTO dto) {
+    @Transactional
+    public HistoricoDTO cadastrarHistorico(UUID usuarioId, SimuladoInputDTO dto) {
 
         Historico historico = new Historico();
-        historico.setUsuario(usuarioRepository.findById(dto.id_usuario())
+        historico.setUsuario(usuarioRepository.findById(usuarioId)
                 .orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado")));
         historico.setTipo_simulado(dto.tipo_simulado());
         historico.setData(LocalDate.now());
@@ -88,7 +91,8 @@ public class HistoricoService {
                     acertou,
                     questao.getConteudos().isEmpty() ? "Geral" : questao.getConteudos().get(0).getMateria().getNome(),
                     alternativa.getAlternativa(),
-                    letraCorreta
+                    letraCorreta,
+                    questao.getImagens()
             ));
         }
 

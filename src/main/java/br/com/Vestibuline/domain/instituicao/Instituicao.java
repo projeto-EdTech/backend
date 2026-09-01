@@ -8,6 +8,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -35,6 +36,7 @@ public class Instituicao {
     @Column(name = "estado_origem")
     private String estadoOrigem;
 
+    @ToString.Exclude
     @OneToMany(mappedBy = "instituicao", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private List<Prova> provas = new ArrayList<>();
 

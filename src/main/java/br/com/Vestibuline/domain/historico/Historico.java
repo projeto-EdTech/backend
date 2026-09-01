@@ -48,5 +48,4 @@ public class Historico {
 
     @Column(name = "tempo_gasto")
     private Integer tempoGasto;
-
 }

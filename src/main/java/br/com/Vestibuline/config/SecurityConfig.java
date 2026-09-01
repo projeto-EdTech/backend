@@ -2,6 +2,7 @@ package br.com.Vestibuline.config;
 
 import br.com.Vestibuline.infra.security.SecurityFilter;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -24,6 +25,9 @@ public class SecurityConfig {
     @Autowired
     private SecurityFilter securityFilter;
 
+    @Value("${cors.allowed-origins:http://localhost:3000}")
+    private List<String> allowedOrigins;
+
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         return http
@@ -33,7 +37,12 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.POST, "/auth/google").permitAll()
 
+                        .requestMatchers(HttpMethod.POST, "/auth/discord/sync").permitAll()
+
                         .requestMatchers("/v3/api-docs/**", "/swagger-ui.html", "/swagger-ui/**").permitAll()
+
+                        // Protegido por token compartilhado no InternalAccessFilter, não por login de usuário.
+                        .requestMatchers("/internal/**").permitAll()
 
                         .anyRequest().authenticated()
                 )
